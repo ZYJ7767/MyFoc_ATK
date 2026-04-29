@@ -188,9 +188,6 @@ void HAL_FDCAN_MspDeInit(FDCAN_HandleTypeDef* fdcanHandle)
   }
 }
 
-
-
-
 /* USER CODE BEGIN 1 */
 
 /* 发送标准数据帧(11位ID, 0~8字节) */

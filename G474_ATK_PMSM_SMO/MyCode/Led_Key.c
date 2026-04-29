@@ -1,4 +1,9 @@
 #include "Led_Key.h"
+#include "Identify_J_B.h"
+
+extern ID_J_B_Handle_t g_idjb;
+
+extern uint8_t   Run_Flag;
 
 /*******▲▲KEY 扫描功能函数▲▲*******/
 /* @brief       按键扫描函数
@@ -21,7 +26,7 @@ uint8_t key_scan(uint8_t mode)
 
     if (key_up && (KEY0 == 0 || KEY1 == 0 || KEY2 == 0))  /* 按键松开标志为1, 且有任意一个按键按下了 */
     {
-        HAL_Delay(10);           /* 去抖动 */
+//        HAL_Delay(10);           /* 去抖动 */
         key_up = 0;
 
         if (KEY0 == 0)  keyval = KEY0_PRES;
@@ -48,8 +53,9 @@ void key_function(uint8_t key , float *Iqref , int16_t *Speedref)
         {
             case KEY0_PRES: 
                 LED0_TOGGLE();
-                *Iqref += 0.01f;
-                if(*Iqref >= 2) *Iqref = 2;
+                Id_J_B_Start(&g_idjb);
+//                *Iqref += 0.01f;
+//                if(*Iqref >= 2) *Iqref = 2;
 //                *Speedref += 50;
 //                if(*Speedref >= 1200) *Speedref =1200 ;
                 break;
@@ -65,6 +71,8 @@ void key_function(uint8_t key , float *Iqref , int16_t *Speedref)
             case KEY2_PRES:
                 LED0_TOGGLE();
                 LED1_TOGGLE();
+
+            
 //                *Iqref = 0;
 //                *Speedref = 0;
                 break;

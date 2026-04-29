@@ -25,10 +25,16 @@ float My_limit(float *limit, float limit_max, float limit_min)
 
 float Normalize_theta(float theta)
 {
-    float a;
-    a = fmodf(theta,2*pi);
-    
-    return a>0?a:(a+2*pi);
+    const float TwoPi = 2.0f * pi;
+    if (theta >= TwoPi)
+    {
+        theta -= TwoPi;
+    }
+    else if (theta < 0.0f)
+    {
+        theta += TwoPi;
+    }
+    return theta;
 }
 
 
@@ -43,16 +49,24 @@ void Clarke(FOC_TypeDef *Foc)
 
 void Park(FOC_TypeDef *Foc , float theta)
 {
-    Foc->Id =  Foc->Ialpha * arm_cos_f32(theta) + Foc->Ibeta * arm_sin_f32(theta);
-    Foc->Iq = -Foc->Ialpha * arm_sin_f32(theta) + Foc->Ibeta * arm_cos_f32(theta);
+    float SinValue = 0.0f;
+    float CosValue = 0.0f;
+    arm_sin_cos_f32(theta * (180.0f / pi), &SinValue, &CosValue);
+    
+    Foc->Id =  Foc->Ialpha * CosValue + Foc->Ibeta * SinValue;
+    Foc->Iq = -Foc->Ialpha * SinValue + Foc->Ibeta * CosValue;
 }
 
 
 
 void Invpark(FOC_TypeDef *Foc , float theta)
 {
-    Foc->Ualpha = Foc->Ud * arm_cos_f32(theta) - Foc->Uq * arm_sin_f32(theta);
-    Foc->Ubeta  = Foc->Ud * arm_sin_f32(theta) + Foc->Uq * arm_cos_f32(theta);
+    float SinValue = 0.0f;
+    float CosValue = 0.0f;
+    arm_sin_cos_f32(theta * (180.0f / pi), &SinValue, &CosValue);
+
+    Foc->Ualpha = Foc->Ud * CosValue - Foc->Uq * SinValue;
+    Foc->Ubeta  = Foc->Ud * SinValue + Foc->Uq * CosValue;
 }
 
 
@@ -64,7 +78,7 @@ void Svpwm(FOC_TypeDef *Foc)
     float u1 = Foc->Ubeta;
     float u2 = _sqrt3_2  * Foc->Ualpha - Foc->Ubeta * _1_2;
     float u3 = -_sqrt3_2 * Foc->Ualpha - Foc->Ubeta * _1_2;
-    
+    float TmnSun;
   
     
     uint8_t A =u1>0?1:0;
@@ -105,18 +119,27 @@ void Svpwm(FOC_TypeDef *Foc)
                 Tm = -Y;
                 Tn = -Z;      
                 break ;    
+        default:
+            Foc->Tcm1 = 0.5f * (float)ARR;
+            Foc->Tcm2 = 0.5f * (float)ARR;
+            Foc->Tcm3 = 0.5f * (float)ARR;
+            __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, Foc->Tcm1);
+            __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, Foc->Tcm2);
+            __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, Foc->Tcm3);
+            return;
     }
     
-
-    if((Tm+Tn)>TS){
-        Tm = (Tm*TS)/(Tm+Tn);
-        Tn = (Tn*TS)/(Tm+Tn);
+    TmnSun = Tm+Tn;
+    if((Tm+Tn)>TS)
+    {
+        Tm = (Tm*TS)/(TmnSun);
+        Tn = (Tn*TS)/(TmnSun);
     }   
     
 
-    float Ta=(TS-Tm-Tn)/4;
-    float Tb= Ta + Tm/2;
-    float Tc= Tb + Tn/2;
+    float Ta=(TS-Tm-Tn)/2;
+    float Tb= Ta + Tm/1;
+    float Tc= Tb + Tn/1;
     
     switch (N)
     {
@@ -152,6 +175,9 @@ void Svpwm(FOC_TypeDef *Foc)
                 break ;
     }
     
+    if(Foc->Tcm1 >= 6999) Foc->Tcm1=6999;
+    if(Foc->Tcm2 >= 6999) Foc->Tcm2=6999;
+    if(Foc->Tcm3 >= 6999) Foc->Tcm3=6999;
 
         __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, Foc->Tcm1);
         __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, Foc->Tcm2);
@@ -175,7 +201,7 @@ void IF_OpenLoop(FOC_TypeDef *Foc, PI_CURRENT_TypeDef *pi_ctrl, float IU, float 
     Foc->Iw = IW;
     pi_ctrl->Iq_ref = Iq_ref;
     
-    Normalize_theta(theta);
+    theta = Normalize_theta(theta);
     
     Clarke(Foc);
     Park(Foc,theta);
@@ -250,8 +276,8 @@ void CurrentPI(FOC_TypeDef *Foc , PI_CURRENT_TypeDef *pi_ctrl)
     pi_ctrl->Id_KI_sum += pi_ctrl->err_Id;
     pi_ctrl->Iq_KI_sum += pi_ctrl->err_Iq;
     
-    if (pi_ctrl->Id_KI_sum > 60)  pi_ctrl->Id_KI_sum =  60;
-    if (pi_ctrl->Id_KI_sum < -60) pi_ctrl->Id_KI_sum = -60;
+    if (pi_ctrl->Id_KI_sum > 30)  pi_ctrl->Id_KI_sum =  30;
+    if (pi_ctrl->Id_KI_sum < -30) pi_ctrl->Id_KI_sum = -30;
     if (pi_ctrl->Iq_KI_sum > 60)  pi_ctrl->Iq_KI_sum =  60;
     if (pi_ctrl->Iq_KI_sum < -60) pi_ctrl->Iq_KI_sum = -60;
     
@@ -259,19 +285,19 @@ void CurrentPI(FOC_TypeDef *Foc , PI_CURRENT_TypeDef *pi_ctrl)
     Foc->Ud =(pi_ctrl->Kp * pi_ctrl->err_Id) + (pi_ctrl->Ki * pi_ctrl->Id_KI_sum);
     Foc->Uq =(pi_ctrl->Kp * pi_ctrl->err_Iq) + (pi_ctrl->Ki * pi_ctrl->Iq_KI_sum);
     
-//        float L = 0.00033f; 
-//        float Psi = 0.005f;
-//        
-//        float Vd_ff = -Enc_Speed * 0.418879f* L * Foc->Iq;
-//        float Vq_ff =  Enc_Speed * 0.418879f* L * Foc->Id + Enc_Speed * 0.418879f * Psi;
-//        
-//        Foc->Ud += Vd_ff;
-//        Foc->Uq += Vq_ff;
+        float L = 0.000305f; 
+        float Psi = 0.00512f;
+        
+        float Vd_ff = -Enc_Speed * 0.418879f* L * Foc->Iq;
+        float Vq_ff = Enc_Speed * 0.418879f* L * Foc->Id + Enc_Speed * 0.418879f * Psi;
+        
+        Foc->Ud += Vd_ff;
+        Foc->Uq += Vq_ff;
 
-    if (Foc->Ud > 14)   Foc->Ud =  14;
-    if (Foc->Ud < -14)  Foc->Ud = -14;
-    if (Foc->Uq > 14)   Foc->Uq =  14;
-    if (Foc->Uq < -14)  Foc->Uq = -14;
+    if (Foc->Ud > 5)   Foc->Ud =  5;
+    if (Foc->Ud < -5)  Foc->Ud = -5;
+    if (Foc->Uq > 13.8)   Foc->Uq =  13.8;
+    if (Foc->Uq < -13.8)  Foc->Uq = -13.8;
 }
 
 

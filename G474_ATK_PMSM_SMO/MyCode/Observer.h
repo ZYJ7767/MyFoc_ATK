@@ -63,7 +63,6 @@ extern PLL_Handle PLL;
 /**** 函数声明 ****/
 float sign(float x);                                                                                                            //符号函数
 void  PLL_calculate(PLL_Handle *PLL ,float Ealpha ,float Ebeta);                                                                //PLL函数
-float SMO_Update(SlidingModeObserver *smo, float u_alpha, float u_beta, float i_alpha, float i_beta);                           //SMO atan
 float SMO_PLL_Update(SlidingModeObserver *smo, PLL_Handle *PLL, float u_alpha, float u_beta, float i_alpha, float i_beta);      //SMO PLL
 
 

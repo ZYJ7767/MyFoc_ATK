@@ -18,9 +18,11 @@
 #define _2_3            0.6666666666666f
 
 
-#define TS              7000     //ARR
+#define ARR             7000
+#define TS              7000
 #define Udc             24
 #define Pn              4        //极对数
+
 
 //FOC控制电机结构体
 typedef struct

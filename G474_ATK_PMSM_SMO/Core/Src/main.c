@@ -32,6 +32,7 @@
 #include "math.h"
 #include "arm_math.h"
 #include "Dwt_timer.h"
+#include "Identify_J_B.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,7 +62,7 @@ uint16_t  ADC_IsensU   = 0;
 uint16_t  ADC_IsensV   = 0;
 uint16_t  ADC_IsensW   = 0;
 
-uint32_t  U_Offset     = 0;             //ADC偏执
+uint32_t  U_Offset     = 0; 
 uint32_t  V_Offset     = 0;
 uint32_t  W_Offset     = 0;
 
@@ -73,35 +74,35 @@ float     IsensU       = 0;
 float     IsensV       = 0;
 float     IsensW       = 0;
 
-uint8_t   Offset_Flag  = 0;             //偏执采集结束标志位
-uint8_t   Run_Flag     = 0;             //点击启动标志为
-uint8_t   Run_Switch   = 0;             //切换标志位
+uint8_t   Offset_Flag  = 0;           
+uint8_t   Run_Flag     = 0;            
+uint8_t   Run_Switch   = 0;            
 uint8_t   ThetaUp_Flag = 0;
 uint8_t   Z_flag       = 0;
 
-uint8_t   Close_Flag   = 0;             //闭环标志位
+uint8_t   Close_Flag   = 0;         
 uint8_t   Hat_Flag     = 0;
 
-uint8_t   key          = 0;             //按键值
-float     my_theta     = 0;             //自增角
+uint8_t   key          = 0;           
+float     my_theta     = 0;            
 
-uint16_t  EncValueRaw  = 0;             //��������ǰֵ
-uint16_t  EncValue     = 0;             //������ֵ
-float     Enc_eTheta   = 0;             //��ʵ��Ƕ� ����������
-float     Enc_Speed    = 0;             //��ʵ�ٶ�   ����������
-uint16_t  Enc_Pos      = 0;             //������λ��(4000)
-uint16_t  Enc_cnt      = 0;             //��������Ȧ
+uint16_t  EncValueRaw  = 0;             
+uint16_t  EncValue     = 0;          
+float     Enc_eTheta   = 0;           
+float     Enc_Speed    = 0;            
+uint16_t  Enc_Pos      = 0;             
+uint16_t  Enc_cnt      = 0;            
 
-float     Smo_e_Theta     = 0;          //SMO_Atan估计电角度
-float     Smo_Pll_e_Theta = 0;          //SMO_PLL估计电角度
+float     Smo_e_Theta     = 0;          
+float     Smo_Pll_e_Theta = 0;         
 float     Bef_e_Theta     = 0;          
-float     Smo_Speed       = 0;          //SMO_RPM
-float     Smo_err         = 0;          //SMO切换时差值
+float     Smo_Speed       = 0;         
+float     Smo_err         = 0;         
 
-float     kp           = 2.07f;          // Kp = wc*L    = 2*pi*1000*0.00033     = 2.070
-float     ki           = 0.185f;         // Ki = wc*R*Ts = 2*pi*1000*0.295*0.0001= 0.185
-float     skp          = 0.035f;
-float     ski          = 0.0000015f;
+float     kp           = 1.92f;          // Kp = wc*L    = 2*pi*1000*0.000305      = 1.92     ����1khz
+float     ki           = 0.236f;         // Ki = wc*R*Ts = 2*pi*1000*0.375*0.0001 = 0.236
+float     skp          = 0.035f;         
+float     ski          = 0.0000015f;         
 float     pkp          = 0.120f;
 float     pkd          = 0.000f;
 
@@ -109,11 +110,11 @@ float     Iqref        = 0.0f;
 int16_t   Speedref     = 0;
 uint16_t  Posref       = 0;
 
-int16_t   Speedref_ramp = 0;            // 斜坡加减速速度给定
-int16_t   Speed_step_up = 2;            // 斜坡加减速梯度
+int16_t   Speedref_ramp = 0;            
+int16_t   Speed_step_up = 2;            
 int16_t   Speed_step_dn = 3;  
 
-float     Ud;                           //Jlink调试变量
+float     Ud;                           //Jlink
 float     Uq;
 float     Ualpha;
 float     Ubeta;
@@ -121,6 +122,12 @@ float     Id;
 float     Iq;
 float     Ialpha;
 float     Ibeta;
+
+//J B identify
+ID_J_B_Handle_t g_idjb;
+ID_J_B_Output_t g_idjb_out;
+ID_J_B_Config_t g_idjb_cfg;
+ID_J_B_Input_t  idjb_in;
 
 DWT_Time_t t;
 
@@ -168,21 +175,20 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC1_Init();
   MX_TIM1_Init();
-  MX_TIM6_Init();
   MX_TIM3_Init();
   MX_TIM7_Init();
   MX_FDCAN1_Init();
   /* USER CODE BEGIN 2 */
   
-  /******* LED全部关闭先 *******/
+  /******* LED shutdown *******/
   LED0(1);
   LED1(1);
   
-  /******* 开启SHUTDOWN *******/
+  /******* SHUTDOWN *******/
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
   
   /******** TIM1&6&7 PWM *********/
-  HAL_TIM_Base_Start_IT(&htim6);
+//  HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);
 
   HAL_TIM_Base_Start( &htim1);                                      //TIM1 PWM
@@ -196,21 +202,21 @@ int main(void)
   HAL_TIMEx_PWMN_Start( &htim1, TIM_CHANNEL_3); 
   
   /******** ADC ********/
-  __HAL_ADC_CLEAR_FLAG( &hadc1, ADC_FLAG_JEOC);                     //清理标志位
+  __HAL_ADC_CLEAR_FLAG( &hadc1, ADC_FLAG_JEOC);                     
   __HAL_ADC_CLEAR_FLAG( &hadc1, ADC_FLAG_EOC);                      //End of Conversion
   
-  HAL_ADCEx_Calibration_Start(&hadc1 , ADC_SINGLE_ENDED);           //ADC校准
-  HAL_ADCEx_InjectedStart_IT(&hadc1);                               //注入组开启
+  HAL_ADCEx_Calibration_Start(&hadc1 , ADC_SINGLE_ENDED);           //ADC
+  HAL_ADCEx_InjectedStart_IT(&hadc1);                               
   
-  /******** 编码器初始化 ********/
-  Encoder_Init();                                                   //编码器初始化
-  while(Offset_Flag == 0)                                           //等ADC偏执采集完在开始对0
+  /******** ������0λУ׼ ********/
+  Encoder_Init();                                                   
+  while(Offset_Flag == 0)                                           
   {
       HAL_Delay(1); 
   }
-  Encoder_Align_Zero();                                             //编码器0位对齐
+  Encoder_Align_Zero();                                             
   
-  /******** PID赋值ֵ ********/
+  /******** PID��ֵ ********/
   C_PI.Kp = kp;
   C_PI.Ki = ki;
   S_PI.Kp = skp;
@@ -218,8 +224,11 @@ int main(void)
   P_PI.Kp = pkp;
   P_PI.Kd = pkd;
 
+  Id_J_B_DefaultConfig(&g_idjb_cfg);
+  Id_J_B_Init(&g_idjb, &g_idjb_cfg);
   
-//  Run_Flag = 1;                                                     //允许启动
+  
+  Run_Flag = 1;                                                     
   
 
   /* USER CODE END 2 */
@@ -229,15 +238,16 @@ int main(void)
   
   while (1)
   {
-    /***** 母线电压ADC*****/
+    /***** ĸ��ADC*****/
       HAL_ADC_Start(&hadc1);
       ADC_Vbus = HAL_ADC_GetValue(&hadc1);
       Vbus = (float)ADC_Vbus * 0.0201416f;
-      LED0_TOGGLE();
 
-    /****** KEY_LED 功能******/
+    /****** KEY_LED ******/
       key = key_scan(0);
       key_function( key , &Iqref , &Speedref);
+      
+      
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -293,13 +303,13 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-/*********************************** ADC中断***********************************/
-/*ADC中断  FOC控制 10kHz 100us*/
-void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)                  //10kHz中断 100us
+/*********************************** ADC�ж�***********************************/
+/*ADC�ж� FOC 10kHz 100us*/
+void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)                  //10kHz  100us
 {
-    static uint8_t  offset_cnt  = 0;                                              //偏执次数计数
-    static uint32_t Spdloop_cnt = 0;                                              //速度环计数
-//    static uint8_t  Posloop_cnt = 0;                                              //位置环计数
+    static uint8_t  offset_cnt  = 0;                                              
+//    static uint32_t Spdloop_cnt = 0;                                              //
+//    static uint8_t  Posloop_cnt = 0;                                              //
     
 
     UNUSED(hadc);
@@ -314,12 +324,12 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)                
             U_Offset += ADC_IsensU;
             V_Offset += ADC_IsensV;
             W_Offset += ADC_IsensW;
-            if(offset_cnt >= 5)
+            if(offset_cnt >= 10)
             {
-                U_Offset = U_Offset/5;
-                V_Offset = V_Offset/5;
-                W_Offset = W_Offset/5;
-                Offset_Flag  = 1;                                               //ƫ����� ��־λ��1
+                U_Offset = U_Offset/10;
+                V_Offset = V_Offset/10;
+                W_Offset = W_Offset/10;
+                Offset_Flag  = 1;                                               
             }
         }
         else
@@ -338,7 +348,7 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)                
         Encoder_Update_Angle();
         MyFoc.position = MyEnc.Raw_Value;
         Enc_eTheta     = MyEnc.Elec_Angle;
-
+/************************************* Position Loop ******************************************/
 //        Posloop_cnt++;
 //        if (Posloop_cnt >= 20)
 //        {
@@ -346,43 +356,52 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)                
 //            P_PI.position_ref = Posref;
 //            PositionPI(&MyFoc, &P_PI, &Speedref);
 //        }
-        
-        Spdloop_cnt++;
-        if (Spdloop_cnt >= 10)
-        {
-            Spdloop_cnt = 0;
-            
-            if (Speedref_ramp < Speedref)
-            {
-                Speedref_ramp += Speed_step_up;
-                if (Speedref_ramp > Speedref) Speedref_ramp = Speedref;
-            } 
-            else if (Speedref_ramp > Speedref) 
-            {
-                Speedref_ramp -= Speed_step_dn;
-                if (Speedref_ramp < Speedref) Speedref_ramp = Speedref;
-            }
+         
+/************************************** Speed Loop *******************************************/
+//        Spdloop_cnt++;
+//        if (Spdloop_cnt >= 10)
+//        {
+//            Spdloop_cnt = 0;
+//            
+//            if (Speedref_ramp < Speedref)
+//            {
+//                Speedref_ramp += Speed_step_up;
+//                if (Speedref_ramp > Speedref) Speedref_ramp = Speedref;
+//            } 
+//            else if (Speedref_ramp > Speedref) 
+//            {
+//                Speedref_ramp -= Speed_step_dn;
+//                if (Speedref_ramp < Speedref) Speedref_ramp = Speedref;
+//            }
 
-            S_PI.speed_ref = Speedref_ramp;
-            SpeedPI(&MyFoc, &S_PI, &Iqref);
-            
-            
-            if (Speedref == 0)
-            {
-                S_PI.speed_KI_sum = 0.0f;
-                C_PI.Iq_KI_sum    = 0.0f;
-                Iqref             = 0.0f;
-            }
+//            S_PI.speed_ref = Speedref_ramp;
+//            SpeedPI(&MyFoc, &S_PI, &Iqref);
+//            
+//            if (Speedref == 0)
+//            {
+//                S_PI.speed_KI_sum = 0.0f;
+//                C_PI.Iq_KI_sum    = 0.0f;
+//                Iqref             = 0.0f;
+//            }
+//        }
+
+/************************************* Current Loop ******************************************/
+
+        float iq_cmd = Iqref;   /* Ĭ������ԭ��·�� */
+
+        if (g_idjb_out.takeover)
+        {
+            iq_cmd = g_idjb_out.iq_cmd_a;  /* ��ʶʱ�ӹ� */
         }
-       
-        IF_OpenLoop(&MyFoc, &C_PI, IsensU, IsensV, IsensW, Iqref, Enc_eTheta  ); 
+
+        IF_OpenLoop(&MyFoc, &C_PI, IsensU, IsensV, IsensW, iq_cmd, Enc_eTheta  ); 
      } //Run_Flag
      
 //     Smo_Pll_e_Theta =  SMO_PLL_Update(&SMO, &PLL, MyFoc.Ualpha, MyFoc.Ubeta, MyFoc.Ialpha, MyFoc.Ibeta);
 
      
 
-    //jlinkt调试变量
+    //jlinkt
     Ud      = MyFoc.Ud;
     Uq      = MyFoc.Uq;
     Ualpha  = MyFoc.Ualpha;
@@ -395,7 +414,7 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)                
 }//ADC IT END
 
 
-/*** 外部中断 ***/
+/*** �ⲿ�ж� ***/
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     // PE4 
@@ -412,46 +431,8 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 
 
 
-
-/*** 定时器中断 ***/
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)  
-{
-    if (htim->Instance == TIM7)                // TIM7  1kHz 1ms
-    {
-        Encoder_Calculate_Speed();
-        Enc_Speed   = MyEnc.Speed_RPM;
-        MyFoc.speed = MyEnc.Speed_RPM;
-        
-        DWT_Timer_Start(&t);
-        static uint8_t can_tx_cnt = 0;
-        can_tx_cnt++;
-        if ( can_tx_cnt>= 100U)
-        {
-            uint8_t tx_data[8] = {
-                0x54, 0x53, 0x4D, 0x31,                     // ASCII: 'T' 'S' 'M' '1'
-                can_tx_cnt,                                 // 发送计数
-                g_fdcan1_last_rx_len,                       // 最近接收长度
-                (uint8_t)g_fdcan1_rx_count,                 // 接收计数(低8位)
-                (uint8_t)g_fdcan1_error_count               // 错误计数(低8位)
-            };
-
-            (void)FDCAN1_SendStd(0x123, tx_data, 8);       // 发标准ID=0x123
-            can_tx_cnt = 0;
-        }
-        DWT_Timer_Stop(&t);
-    }
-    
-//    if (htim->Instance == TIM6)
-//    if (htim->Instance == TIM3)
-}//TIM IT END
-
-
-
-
-
-
-/*** 低通滤波（暂时有内存保护的问题）***/ 
-float LowPassFilter(float input , float a)                                       //a滤波系数
+/*** ��ͨ�˲� **/ 
+float LowPassFilter(float input , float a)                                       
 {
     static float prev_output = 0;
     static uint8_t init_flag = 0;
@@ -469,6 +450,62 @@ float LowPassFilter(float input , float a)                                      
 }
 
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM6 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+    if (htim->Instance == TIM7)                // TIM7  1kHz 1ms
+    {
+        Encoder_Calculate_Speed();
+        Enc_Speed   = MyEnc.Speed_RPM;
+        MyFoc.speed = MyEnc.Speed_RPM;
+        
+        
+        idjb_in.iq_meas_a = MyFoc.Iq;
+        idjb_in.speed_rpm = MyFoc.speed;
+        idjb_in.run_flag  = Run_Flag;
+
+        Id_J_B_Update_1kHz(&g_idjb, &idjb_in, &g_idjb_out);
+        
+        
+        
+//        DWT_Timer_Start(&t);
+//        static uint8_t can_tx_cnt = 0;
+//        can_tx_cnt++;
+//        if ( can_tx_cnt>= 100U)
+//        {
+//            uint8_t tx_data[8] = {
+//                0x54, 0x53, 0x4D, 0x31,                     // ASCII: 'T' 'S' 'M' '1'
+//                can_tx_cnt,                                 // 
+//                g_fdcan1_last_rx_len,                       // ���ճ���
+//                (uint8_t)g_fdcan1_rx_count,                 // 
+//                (uint8_t)g_fdcan1_error_count               // 
+//            };
+
+//            (void)FDCAN1_SendStd(0x123, tx_data, 8);        // ID=0x123
+//            can_tx_cnt = 0;
+//        }
+//        DWT_Timer_Stop(&t);
+
+
+
+    }
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

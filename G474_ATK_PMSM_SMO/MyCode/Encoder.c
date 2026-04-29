@@ -40,9 +40,9 @@ void Encoder_Update_Angle(void)
 /* 开机0位校准 (强拖定位法) 阻塞式函数，必须确保 ADC 偏置校准完成后再调用 */
 void Encoder_Align_Zero(void)
 {
-    float align_voltage = 2.0f;                                 // 校准电压 2V 
+    float align_voltage = 0.5f;                                 // 校准电压 0.5V 
 
-    for(int i=0; i<1500; i++)                                   // 持续1.5秒钟
+    for(int i=0; i<500; i++)                                    // 持续0.5秒钟
     {
         VF_OpenLoop(&MyFoc,align_voltage ,0 , 0);               // 强制设置开环电压，固定在0度
         HAL_Delay(1);
@@ -54,7 +54,7 @@ void Encoder_Align_Zero(void)
 }
 
 
-/* 计算速度 (M法：固定时间测脉冲数) 在 1ms 定时器中断(TIM7)中调用*/
+/* 计算速度 (M法：固定时间测脉冲数) 在 1ms 中断中调用*/
 void Encoder_Calculate_Speed(void)
 {
     

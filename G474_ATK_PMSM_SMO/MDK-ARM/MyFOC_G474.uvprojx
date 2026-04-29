@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32G474xx,__TARGET_FPU_VFP, ARM_MATH_CM4, __CC_ARM</Define>
               <Undefine></Undefine>
-              <IncludePath>../Core/Inc;../Drivers/STM32G4xx_HAL_Driver/Inc;../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32G4xx/Include;../Drivers/CMSIS/Include;../MyCode</IncludePath>
+              <IncludePath>../Core/Inc;../Drivers/STM32G4xx_HAL_Driver/Inc;../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32G4xx/Include;../Drivers/CMSIS/Include;../MyCode;../Middlewares/Third_Party/FreeRTOS/Source/include;../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2;../Middlewares/Third_Party/FreeRTOS/Source/portable/RVDS/ARM_CM4F</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -478,6 +478,62 @@
               <FileName>stm32g4xx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Core/Src/stm32g4xx_hal_msp.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32g4xx_hal_timebase_tim.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>../Core/Src/stm32g4xx_hal_timebase_tim.c</FilePath>
+              <FileOption>
+                <CommonProperty>
+                  <UseCPPCompiler>2</UseCPPCompiler>
+                  <RVCTCodeConst>0</RVCTCodeConst>
+                  <RVCTZI>0</RVCTZI>
+                  <RVCTOtherData>0</RVCTOtherData>
+                  <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>1</IncludeInBuild>
+                  <AlwaysBuild>2</AlwaysBuild>
+                  <GenerateAssemblyFile>2</GenerateAssemblyFile>
+                  <AssembleAssemblyFile>2</AssembleAssemblyFile>
+                  <PublicsOnly>2</PublicsOnly>
+                  <StopOnExitCode>11</StopOnExitCode>
+                  <CustomArgument></CustomArgument>
+                  <IncludeLibraryModules></IncludeLibraryModules>
+                  <ComprImg>1</ComprImg>
+                </CommonProperty>
+                <FileArmAds>
+                  <Cads>
+                    <interw>2</interw>
+                    <Optim>0</Optim>
+                    <oTime>2</oTime>
+                    <SplitLS>2</SplitLS>
+                    <OneElfS>2</OneElfS>
+                    <Strict>2</Strict>
+                    <EnumInt>2</EnumInt>
+                    <PlainCh>2</PlainCh>
+                    <Ropi>2</Ropi>
+                    <Rwpi>2</Rwpi>
+                    <wLevel>0</wLevel>
+                    <uThumb>2</uThumb>
+                    <uSurpInc>2</uSurpInc>
+                    <uC99>2</uC99>
+                    <uGnu>2</uGnu>
+                    <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>2</vShortEn>
+                    <vShortWch>2</vShortWch>
+                    <v6Lto>2</v6Lto>
+                    <v6WtE>2</v6WtE>
+                    <v6Rtti>2</v6Rtti>
+                    <VariousControls>
+                      <MiscControls></MiscControls>
+                      <Define></Define>
+                      <Undefine></Undefine>
+                      <IncludePath></IncludePath>
+                    </VariousControls>
+                  </Cads>
+                </FileArmAds>
+              </FileOption>
             </File>
           </Files>
         </Group>
@@ -661,9 +717,14 @@
               <FilePath>..\MyCode\Observer.c</FilePath>
             </File>
             <File>
-              <FileName>Dwt_timer.c</FileName>
+              <FileName>Identify_J_B.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\MyCode\Dwt_timer.c</FilePath>
+              <FilePath>..\MyCode\Identify_J_B.c</FilePath>
+            </File>
+            <File>
+              <FileName>Identify_Rs_Ls.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\Identify_Rs_Ls.c</FilePath>
             </File>
             <File>
               <FileName>Led_Key.c</FileName>
@@ -671,9 +732,19 @@
               <FilePath>..\MyCode\Led_Key.c</FilePath>
             </File>
             <File>
+              <FileName>Dwt_timer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\Dwt_timer.c</FilePath>
+            </File>
+            <File>
               <FileName>ReadMe.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\MyCode\ReadMe.c</FilePath>
+            </File>
+            <File>
+              <FileName>ReadMe_for_Identify.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\ReadMe_for_Identify.c</FilePath>
             </File>
           </Files>
         </Group>

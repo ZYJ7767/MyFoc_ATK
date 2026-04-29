@@ -35,3 +35,4 @@ myfoc_g474\led_key.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr.h
 myfoc_g474\led_key.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr_ex.h
 myfoc_g474\led_key.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h
 myfoc_g474\led_key.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h
+myfoc_g474\led_key.o: ..\MyCode\Identify_J_B.h
