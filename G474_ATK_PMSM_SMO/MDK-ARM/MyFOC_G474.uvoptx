@@ -120,7 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
-          <Name>a</Name>
+          <Name>d</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -353,7 +353,7 @@
         <Ww>
           <count>39</count>
           <WinNumber>1</WinNumber>
-          <ItemText>ref</ItemText>
+          <ItemText>ski</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>

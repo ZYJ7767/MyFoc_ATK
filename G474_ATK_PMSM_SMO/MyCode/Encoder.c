@@ -28,7 +28,7 @@ void Encoder_Update_Angle(void)
 
     delta *= ENCODER_DIR;
     
-    while (delta >= ENCODER_PPR) delta -= ENCODER_PPR;          // 处理周期回绕 (归一化到 0 ~ 3999 范围内)
+    while (delta >= ENCODER_PPR) delta -= ENCODER_PPR;          // 处理周期回绕 (归一化)
     while (delta < 0)            delta += ENCODER_PPR;
     
     MyEnc.Mech_Angle = (float)delta * 0.0015707963f;            // 计算机械角度 (0 ~ 2pi)   2 * pi / 4000 = 0.0015707963f
@@ -41,15 +41,12 @@ void Encoder_Update_Angle(void)
 void Encoder_Align_Zero(void)
 {
     float align_voltage = 0.5f;                                 // 校准电压 0.5V 
-
     for(int i=0; i<500; i++)                                    // 持续0.5秒钟
     {
         VF_OpenLoop(&MyFoc,align_voltage ,0 , 0);               // 强制设置开环电压，固定在0度
         HAL_Delay(1);
     }
-    
     MyEnc.Offset = __HAL_TIM_GET_COUNTER(&htim3);               // 已物理对齐到电角度0度，记录CNT作为偏置
-    
     VF_OpenLoop(&MyFoc, 0, 0, 0.0f);                            // 停止输出电压
 }
 
@@ -57,20 +54,13 @@ void Encoder_Align_Zero(void)
 /* 计算速度 (M法：固定时间测脉冲数) 在 1ms 中断中调用*/
 void Encoder_Calculate_Speed(void)
 {
-    
     uint16_t cur_cnt = __HAL_TIM_GET_COUNTER(&htim3);                   // 1. 读取当前计数值
-
     int32_t diff = (int32_t)cur_cnt - (int32_t)MyEnc.Last_Raw_Value;    // 2. 计算差值 (转了多少个脉冲)强转 int32_t 防止溢出
-
     if (diff < -2000)       diff += ENCODER_PPR;                        // 3. 处理过零点 
     else if (diff > 2000)   diff -= ENCODER_PPR;                        //    反向跨越0点
-
     MyEnc.Last_Raw_Value = cur_cnt;                                     // 4. 更新旧值
-
     float cur_rpm   = (float)diff * 15.0f;                              // 5. 计算瞬时RPM = (diff / 4000) * (60 / 0.001) = diff * 15
-
-    MyEnc.Speed_Flt = MyEnc.Speed_Flt * 0.99f + cur_rpm * 0.01f;        // 6. 速度强低通滤波 
-
+    MyEnc.Speed_Flt = MyEnc.Speed_Flt * 0.6f + cur_rpm * 0.4f;        // 6. 速度强低通滤波 
     MyEnc.Speed_RPM = (int16_t)MyEnc.Speed_Flt;                         // 7. 输出整数 RPM
 }
 

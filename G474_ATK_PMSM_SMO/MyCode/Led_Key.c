@@ -5,7 +5,7 @@ extern ID_J_B_Handle_t g_idjb;
 
 extern uint8_t   Run_Flag;
 
-/*******▲▲KEY 扫描功能函数▲▲*******/
+/******* KEY 扫描功能函数 *******/
 /* @brief       按键扫描函数
  * @note        该函数有响应优先级(同时按下多个按键): KEY0 > KEY1 > KEY2!!
  * @param       mode:0 / 1, 具体含义如下:
@@ -44,37 +44,40 @@ uint8_t key_scan(uint8_t mode)
 }
 
 
-/*******▲▲KEY 控制功能函数▲▲*******/
+/******* KEY 控制功能函数 *******/
 void key_function(uint8_t key , float *Iqref , int16_t *Speedref)
 {
       if (key)
       {
         switch (key)
         {
+            /********* Key0 *********/
             case KEY0_PRES: 
                 LED0_TOGGLE();
-                Id_J_B_Start(&g_idjb);
+            
+//                Id_J_B_Start(&g_idjb);
+            
 //                *Iqref += 0.01f;
 //                if(*Iqref >= 2) *Iqref = 2;
-//                *Speedref += 50;
-//                if(*Speedref >= 1200) *Speedref =1200 ;
+                *Speedref += 500;
+                if(*Speedref >= 4500) *Speedref =4500 ;
                 break;
-
+            
+            /********* Key1 *********/
             case KEY1_PRES:
                 LED1_TOGGLE();
-                *Iqref -= 0.01f;
-                if(*Iqref <= -2) *Iqref = -2;
-//                *Speedref -= 50;
-//                if(*Speedref <= -1200) *Speedref = -1200;
+//                *Iqref -= 0.01f;
+//                if(*Iqref <= -2) *Iqref = -2;
+                *Speedref -= 500;
+                if(*Speedref <= -4500) *Speedref = -4500;
                 break;
-
+            
+            /********* Key2 *********/
             case KEY2_PRES:
                 LED0_TOGGLE();
                 LED1_TOGGLE();
-
-            
 //                *Iqref = 0;
-//                *Speedref = 0;
+                *Speedref = 0;
                 break;
             default : break;
         }

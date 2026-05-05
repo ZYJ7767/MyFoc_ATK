@@ -23,8 +23,8 @@ void Id_J_B_DefaultConfig(ID_J_B_Config_t *cfg)
     if (cfg == 0) return;
     memset(cfg, 0, sizeof(*cfg));
 
-    /* 按ReadMe安全优先：额定4.5A，辨识先用1.2A */
-    cfg->iq_test_a = 0.3f;
+    /* 按ReadMe安全优先 */
+    cfg->iq_test_a = 0.6f;
     cfg->iq_abs_limit_a = 1.0f;
 
     cfg->prepare_ms = 300;
@@ -32,8 +32,8 @@ void Id_J_B_DefaultConfig(ID_J_B_Config_t *cfg)
     cfg->coast_ms = 350;
     cfg->cycles = 20;
 
-    /* 额定4000rpm，安全上限先设1200rpm */
-    cfg->speed_safe_rpm = 2000.0f;
+    /* 额定4000rpm，安全上限*/
+    cfg->speed_safe_rpm = 3500.0f;
     cfg->alpha_lpf = 0.20f;
 }
 

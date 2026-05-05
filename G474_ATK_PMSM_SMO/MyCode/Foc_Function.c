@@ -13,7 +13,7 @@ PI_SPEED_TypeDef    S_PI  = {0,0,0,0,0};
 PI_POSITION_TypeDef P_PI  = {0,0,0};
 
 
-
+/***************************************** FOC 算法  *************************************************/
 float My_limit(float *limit, float limit_max, float limit_min)
 {
     if(*limit > limit_max){*limit = limit_max;}
@@ -185,6 +185,7 @@ void Svpwm(FOC_TypeDef *Foc)
 }
 
 
+/***************************************** 控制模式接口  *************************************************/
 void VF_OpenLoop(FOC_TypeDef *Foc, float Ud, float Uq, float theta)
 {
     Foc->Ud = Ud;
@@ -267,6 +268,7 @@ void SMO_S_C_Control(FOC_TypeDef *Foc,PI_SPEED_TypeDef *S_PI, PI_CURRENT_TypeDef
 }
 
 
+/***************************************** 控制器  *************************************************/
 void CurrentPI(FOC_TypeDef *Foc , PI_CURRENT_TypeDef *pi_ctrl)
 {
 
@@ -280,24 +282,22 @@ void CurrentPI(FOC_TypeDef *Foc , PI_CURRENT_TypeDef *pi_ctrl)
     if (pi_ctrl->Id_KI_sum < -30) pi_ctrl->Id_KI_sum = -30;
     if (pi_ctrl->Iq_KI_sum > 60)  pi_ctrl->Iq_KI_sum =  60;
     if (pi_ctrl->Iq_KI_sum < -60) pi_ctrl->Iq_KI_sum = -60;
-    
 
     Foc->Ud =(pi_ctrl->Kp * pi_ctrl->err_Id) + (pi_ctrl->Ki * pi_ctrl->Id_KI_sum);
     Foc->Uq =(pi_ctrl->Kp * pi_ctrl->err_Iq) + (pi_ctrl->Ki * pi_ctrl->Iq_KI_sum);
     
+        //反电动势前馈解耦
         float L = 0.000305f; 
         float Psi = 0.00512f;
-        
         float Vd_ff = -Enc_Speed * 0.418879f* L * Foc->Iq;
         float Vq_ff = Enc_Speed * 0.418879f* L * Foc->Id + Enc_Speed * 0.418879f * Psi;
-        
         Foc->Ud += Vd_ff;
         Foc->Uq += Vq_ff;
 
     if (Foc->Ud > 5)   Foc->Ud =  5;
     if (Foc->Ud < -5)  Foc->Ud = -5;
-    if (Foc->Uq > 13.8)   Foc->Uq =  13.8;
-    if (Foc->Uq < -13.8)  Foc->Uq = -13.8;
+    if (Foc->Uq > 13.8f)   Foc->Uq =  13.8f;
+    if (Foc->Uq < -13.8f)  Foc->Uq = -13.8f;
 }
 
 
@@ -305,59 +305,39 @@ void SpeedPI(FOC_TypeDef *Foc, PI_SPEED_TypeDef *pi_ctrl, float *Iqref)
 {
 
     pi_ctrl->err_speed = pi_ctrl->speed_ref - Foc->speed;
-    
 
     pi_ctrl->speed_KI_sum += pi_ctrl->err_speed;
     
-    if (pi_ctrl->speed_KI_sum >  800000) pi_ctrl->speed_KI_sum =  800000;
-    if (pi_ctrl->speed_KI_sum < -800000) pi_ctrl->speed_KI_sum = -800000;
-    
+    if (pi_ctrl->speed_KI_sum >  50000) pi_ctrl->speed_KI_sum =  50000;
+    if (pi_ctrl->speed_KI_sum < -50000) pi_ctrl->speed_KI_sum = -50000;
 
     (*Iqref) =(pi_ctrl->Kp * pi_ctrl->err_speed) + (pi_ctrl->Ki * pi_ctrl->speed_KI_sum);
 
-
     if (*Iqref >  3.0f)  *Iqref =  3.0f;
-//    if (*Iqref < 0)  *Iqref = 0;
     if (*Iqref < -3.0f)  *Iqref = -3.0f;
 }
 
 
-void PositionPI(FOC_TypeDef *Foc, PI_POSITION_TypeDef *pi_ctrl, int16_t *Speedref)
+void PositionPI(int32_t actual_pos, int32_t target_pos, PI_POSITION_TypeDef *pi_ctrl, int16_t *Speedref)
 {
-#define MECH_PPR  4000.0f
+    float err = (float)(target_pos - actual_pos);
 
-    float err = (float)pi_ctrl->position_ref - (float)Foc->position;
-
-
-    if (err < 0.0f && err > -150.0f)
-    {
-        err = 0.0f; 
-    }
-    else if (err <= -150.0f)
-    {
-        err += MECH_PPR;
-    }
-
-    if (fabsf(err) < 5.0f)
+    if (fabsf(err) < 3.0f)                                      //消除死区抖动
     {
         *Speedref = 0;
-        pi_ctrl->err_position = 0;
         pi_ctrl->Last_Err = err;
         return;
     }
-    
 
     float P_Term = pi_ctrl->Kp * err;
     float D_Term = pi_ctrl->Kd * (err - pi_ctrl->Last_Err);
-    
     float target_speed = P_Term + D_Term;
-
 
     pi_ctrl->Last_Err = err;
 
+    if (target_speed >  500.0f) target_speed =  500.0f ;        // 对称限幅
+    if (target_speed < -500.0f) target_speed = -500.0f;
 
-    if (target_speed >  300.0f) target_speed =  300.0f;
-    if (target_speed <  0.0f)   target_speed =  0.0f;
     *Speedref = (int16_t)target_speed;
 }
 

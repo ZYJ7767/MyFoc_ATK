@@ -112,7 +112,7 @@ void  SMO_S_C_Control(FOC_TypeDef *Foc,PI_SPEED_TypeDef *S_PI, PI_CURRENT_TypeDe
 //控制器函数接口
 void  CurrentPI (FOC_TypeDef *Foc , PI_CURRENT_TypeDef *pi_ctrl);
 void  SpeedPI   (FOC_TypeDef *Foc , PI_SPEED_TypeDef   *pi_ctrl , float *Iqref);
-void  PositionPI(FOC_TypeDef *Foc, PI_POSITION_TypeDef *pi_ctrl, int16_t *Speedref);
+void PositionPI(int32_t actual_pos, int32_t target_pos, PI_POSITION_TypeDef *pi_ctrl, int16_t *Speedref);
 
 
 
