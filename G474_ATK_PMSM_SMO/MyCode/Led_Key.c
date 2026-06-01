@@ -55,7 +55,7 @@ void key_function(uint8_t key , float *Iqref , int16_t *Speedref)
             case KEY0_PRES: 
                 LED0_TOGGLE();
             
-//                Id_J_B_Start(&g_idjb);
+                Id_J_B_Start(&g_idjb);
             
 //                *Iqref += 0.01f;
 //                if(*Iqref >= 2) *Iqref = 2;

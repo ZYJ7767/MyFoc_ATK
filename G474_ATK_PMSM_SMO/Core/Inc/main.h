@@ -53,7 +53,6 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-float LowPassFilter(float input,float a);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

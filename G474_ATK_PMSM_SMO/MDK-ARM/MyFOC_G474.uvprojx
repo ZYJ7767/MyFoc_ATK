@@ -727,6 +727,11 @@
               <FilePath>..\MyCode\Identify_Rs_Ls.c</FilePath>
             </File>
             <File>
+              <FileName>Filter.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\Filter.c</FilePath>
+            </File>
+            <File>
               <FileName>Led_Key.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\MyCode\Led_Key.c</FilePath>

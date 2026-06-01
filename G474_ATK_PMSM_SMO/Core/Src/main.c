@@ -99,14 +99,15 @@ float     Bef_e_Theta     = 0;
 float     Smo_Speed       = 0;         
 float     Smo_err         = 0;         
 
-float     kp           = 1.92f;         // Kp = wc*L    = 2*pi*1000*0.000305      = 1.92     带宽1khz
-float     ki           = 0.236f;        // Ki = wc*R*Ts = 2*pi*1000*0.375*0.0001 = 0.236
-float     skp          = 0.0081f;       //0.01103f
-float     ski          = 0.00002f;      //    0.000139f;   0.00195
+float     kp           = 1.92f;         // Kp  = wc*L    = 2*pi*1000*0.000305     = 1.92     带宽1khz
+float     ki           = 0.236f;        // Ki  = wc*R*Ts = 2*pi*1000*0.375*0.0001 = 0.236
+float     skp          = 0.00591f;      // skp = (2*pi/60) * (2*wc*J - B) / Kt               带宽20hz(以rpm为速度)
+float     ski          = 0.000378f;     // ski = [(2*pi/60) * (wc*wc*J) / Kt] * Ts
 float     pkp          = 0.15f;
 float     pkd          = 0.000f;
 
 float     Iqref        = 0.0f;
+float     Idref        = 0.0f;
 int16_t   Speedref     = 0;
 int32_t   Posref       = 0;
 
@@ -183,7 +184,7 @@ int main(void)
   MX_FDCAN1_Init();
   /* USER CODE BEGIN 2 */
   
-  /******* LED shutdown *******/
+  /******* LED 关闭 *******/
   LED0(1);
   LED1(1);
   
@@ -211,6 +212,7 @@ int main(void)
   HAL_ADCEx_Calibration_Start(&hadc1 , ADC_SINGLE_ENDED);           //ADC
   HAL_ADCEx_InjectedStart_IT(&hadc1);                               
   
+  HAL_ADC_Start(&hadc1);
   /******** 编码器0位校准 ********/
   Encoder_Init();                                                   
   while(Offset_Flag == 0)                                           
@@ -219,6 +221,10 @@ int main(void)
   }
   Encoder_Align_Zero();                                             
   
+  /******** LADRC初始化 ********/
+  SpeedLADRC_Init(&S_LADRC);
+  SpeedLADRC_Reset(&S_LADRC, 0.0f);
+  
   /******** PID赋值 ********/
   C_PI.Kp = kp;
   C_PI.Ki = ki;
@@ -226,14 +232,21 @@ int main(void)
   S_PI.Ki = ski;
   P_PI.Kp = pkp;
   P_PI.Kd = pkd;
-
-//  Id_J_B_DefaultConfig(&g_idjb_cfg);
-//  Id_J_B_Init(&g_idjb, &g_idjb_cfg);
   
+  /******** FW结构体赋值 ********/
+  FW_PI.Vdc         = Udc;         // 目前宏定义是24，如果有实时采样可以在控制大循环中更新
+  FW_PI.Is_max      = 4.0f;        // 电流极限圆半径：依据速度环的最大电流限幅设置
+  FW_PI.id_fw_min   = -4.0f;       // 弱磁深度底线直接用-Is_max防止烧毁
+  FW_PI.Kp          = 0.3f;              
+  FW_PI.Ki          = 0.04f;             
+  FW_PI.fw_KI_sum   = 0.0f;
+  
+  /******** J辨识初始化 ********/
+  Id_J_B_DefaultConfig(&g_idjb_cfg);
+  Id_J_B_Init(&g_idjb, &g_idjb_cfg);
   
   Run_Flag = 1;                                                     
-  
-
+ 
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -242,15 +255,15 @@ int main(void)
   while (1)
   {
     /***** 母线ADC*****/
-      HAL_ADC_Start(&hadc1);
-      ADC_Vbus = HAL_ADC_GetValue(&hadc1);
-      Vbus = (float)ADC_Vbus * 0.0201416f;
-
+    if (HAL_ADC_PollForConversion(&hadc1, 1) == HAL_OK)
+    {
+        ADC_Vbus = HAL_ADC_GetValue(&hadc1);
+        Vbus = (float)ADC_Vbus * 0.0201416f;
+    }
     /****** KEY_LED ******/
       key = key_scan(0);
       key_function( key , &Iqref , &Speedref);
       
-        S_PI.Ki = ski;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -355,21 +368,21 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)                
         Enc_eTheta     = MyEnc.Elec_Angle;
          
 /************************************* Position Loop ******************************************/
-        // 软件扩展多圈位置计算
-        int16_t delta = MyEnc.Raw_Value - Last_Raw_Value;
-        if (delta >  2000) delta -= 4000; // 发生反转溢出
-        if (delta < -2000) delta += 4000; // 发生正转溢出
-        Total_Position += delta;          // 累加到多圈总位置
-        Last_Raw_Value = MyEnc.Raw_Value; // 更新历史值
+//        // 软件扩展 位置环 多圈位置计算
+//        int16_t delta = MyEnc.Raw_Value - Last_Raw_Value;
+//        if (delta >  2000) delta -= 4000; // 发生反转溢出
+//        if (delta < -2000) delta += 4000; // 发生正转溢出
+//        Total_Position += delta;          // 累加到多圈总位置
+//        Last_Raw_Value = MyEnc.Raw_Value; // 更新历史值
 
-        // 位置环执行 (每20个周期执行一次，即2ms，也就是500Hz跑一次位置环)
-        Posloop_cnt++;
-        if (Posloop_cnt >= 20)
-        {
-            Posloop_cnt = 0;
-            PositionPI(Total_Position, (int32_t)Posref, &P_PI, &Speedref);
-        }
-        
+//        // 位置环执行 (每20个周期执行一次，即2ms，也就是500Hz跑一次位置环)
+//        Posloop_cnt++;
+//        if (Posloop_cnt >= 20)
+//        {
+//            Posloop_cnt = 0;
+//            PositionPI(Total_Position, (int32_t)Posref, &P_PI, &Speedref);
+//        }
+//        
 /************************************** Speed Loop *******************************************/
         Spdloop_cnt++;
         if (Spdloop_cnt >= 10)
@@ -394,22 +407,29 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef *hadc)                
                 if (Speedref_ramp < Speedref) Speedref_ramp = Speedref;
             }
 
-            S_PI.speed_ref = Speedref_ramp;
-            SpeedPI(&MyFoc, &S_PI, &Iqref);
-
+            /******** 速度环LADRC控制器 ********/
+            SpeedLADRC(&MyFoc, &S_LADRC, Speedref_ramp, &Iqref);
+            
+            /********* 速度环PI控制器 *********/
+//            S_PI.speed_ref = Speedref_ramp;
+//            SpeedPI(&MyFoc, &S_PI, &Iqref);
         }
-
+        
+/************************************** FW Update ******************************************/
+        
+//        FW_PI.Vdc = 24;
+//        FieldWeakening_Control(&MyFoc, &FW_PI, Iqref, &Idref, &Iqref);
+        
 /************************************* Current Loop ******************************************/
-        float iq_cmd = Iqref;   /* 默认走你原本路径 */
-//        if (g_idjb_out.takeover)
-//        {
-//            iq_cmd = g_idjb_out.iq_cmd_a;  /* 辨识时接管 */
-//        }
+        float iq_cmd = Iqref;
+        float id_cmd = Idref;
+        
+//        if (g_idjb_out.takeover) iq_cmd = g_idjb_out.iq_cmd_a;  /* 辨识时接管 */
 
-        IF_OpenLoop(&MyFoc, &C_PI, IsensU, IsensV, IsensW, iq_cmd, Enc_eTheta);
+        IF_OpenLoop(&MyFoc, &C_PI, IsensU, IsensV, IsensW, iq_cmd, id_cmd , Enc_eTheta);
      } //Run_Flag
      
-//     Smo_Pll_e_Theta =  SMO_PLL_Update(&SMO, &PLL, MyFoc.Ualpha, MyFoc.Ubeta, MyFoc.Ialpha, MyFoc.Ibeta);
+     Smo_Pll_e_Theta =  SMO_PLL_Update(&SMO, &PLL, MyFoc.Ualpha, MyFoc.Ubeta, MyFoc.Ialpha, MyFoc.Ibeta);
      DWT_Timer_Stop(&t);
 
     //jlinkt
@@ -430,25 +450,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 }
 
-
-
-/*** 低通滤波 **/ 
-float LowPassFilter(float input , float a)                                       
-{
-    static float prev_output = 0;
-    static uint8_t init_flag = 0;
-    
-     if(!init_flag) 
-     {
-        prev_output = input;
-        init_flag = 1;
-        return prev_output;
-     }
-    
-    float output = a * input + (1.0f - a) * prev_output;
-    prev_output = output;
-    return output;
-}
 
 /* USER CODE END 4 */
 
@@ -471,19 +472,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE BEGIN Callback 1 */
     if (htim->Instance == TIM7)                // TIM7  1kHz 1ms
     {
-        /************* Encoder SpeedCal ***************/
+        /******************* Encoder SpeedCal *********************/
         Encoder_Calculate_Speed();
         Enc_Speed   = MyEnc.Speed_RPM;
         MyFoc.speed = MyEnc.Speed_RPM;
 
-        /************* J_B Identify ***************/
+        /********************* J_B Identify ***********************/
 //        idjb_in.iq_meas_a = MyFoc.Iq;
 //        idjb_in.speed_rpm = MyFoc.speed;
 //        idjb_in.run_flag  = Run_Flag;
 
 //        Id_J_B_Update_1kHz(&g_idjb, &idjb_in, &g_idjb_out);
 
-        /************* CAN COM ***************/
+        /*********************** CAN COM ***********************/
 //        static uint8_t can_tx_cnt = 0;
 //        can_tx_cnt++;
 //        if ( can_tx_cnt>= 100U)

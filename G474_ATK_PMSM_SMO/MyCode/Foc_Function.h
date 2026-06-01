@@ -18,10 +18,14 @@
 #define _2_3            0.6666666666666f
 
 
+#define RAD_TO_DEG      57.2957795131f
+
 #define ARR             7000
 #define TS              7000
 #define Udc             24
 #define Pn              4        //极对数
+
+#define ESO_SUBSTEPS    5
 
 
 //FOC控制电机结构体
@@ -87,13 +91,71 @@ typedef struct
     float Last_Err;
 }PI_POSITION_TypeDef;
 
+//速度环LADRC控制器(结构体为二阶LADRC，速度环这里用一阶)
+typedef struct
+{
+    float speed_ref;     // 速度给定，单位：RPM
+    float speed_fdb;     // 速度反馈，单位：RPM
+    float err_speed;     // 速度误差，单位：RPM
+
+    float h;             // 控制周期，单位：s，1ms = 0.001f
+    float b0;            // 名义对象增益，单位：RPM/s^2/A
+    float wc;            // 控制器带宽，单位：rad/s
+    float w0;            // 观测器带宽，单位：rad/s
+    float kp;            // 线性状态误差反馈参数，kp = wc * wc
+    float kd;            // 线性状态误差反馈参数，kd = 2 * wc
+
+    float l1;            // ESO参数，l1 = 3 * w0
+    float l2;            // ESO参数，l2 = 3 * w0 * w0
+    float l3;            // ESO参数，l3 = w0 * w0 * w0
+
+    float z1;            // ESO估计的速度
+    float z2;            // ESO估计的速度变化率
+    float z3;            // ESO估计的总扰动
+    
+    float dz1_last;      // ESO导数缓存（梯形积分用）
+    float dz2_last;
+    float dz3_last;
+
+    float e;             // ESO观测误差
+    float u0;            // 未补偿控制量
+    float u;             // 最终输出
+    float last_u;        // 上一拍输出，用于离散ESO更新
+
+    float Iq_Max;        // Iq上限，单位：A
+    float Iq_Min;        // Iq下限，单位：A
+    float Iq_Rate;       // Iq变化率限制，单位：A/s，0表示关闭
+} LADRC_SPEED_TypeDef;
+
+// 弱磁控制器结构体
+typedef struct
+{
+    float Vdc;         // 实时直流母线电压，单位V
+    float Vs_max;      // 电压极限边界 (带一定裕量)
+    float Vs_ref;      // 当前合成电压矢量幅值
+    float err_V;       // 电压误差
+    
+    // PI 参数
+    float Kp;          // 比例系数
+    float Ki;          // 积分系数
+    float fw_KI_sum;   // 积分项 (单向、防饱和)
+    
+    float id_fw;       // 输出的弱磁电流指令 (负值)
+    float id_fw_min;   // 深度弱磁硬限幅 (如 -Is_max 或 -ψf/Ld)
+    float Is_max;      // 系统最大允许相电流 (A)
+    
+} PI_FW_TypeDef;
+
+
 
 extern FOC_TypeDef         MyFoc;
 extern PI_CURRENT_TypeDef  C_PI;
 extern PI_SPEED_TypeDef    S_PI;
 extern PI_POSITION_TypeDef P_PI;
+extern LADRC_SPEED_TypeDef S_LADRC;
+extern PI_FW_TypeDef       FW_PI;
 
-/****功能函数声明****/
+/************ 功能函数声明 ************/
 //FOC控制函数接口
 float My_limit(float *limit, float limit_max, float limit_min);
 float Normalize_theta(float theta);
@@ -104,16 +166,30 @@ void  Svpwm(FOC_TypeDef *Foc);
 
 //FOC集成函数接口
 void  VF_OpenLoop(FOC_TypeDef *Foc, float Ud, float Uq, float theta);
-void  IF_OpenLoop(FOC_TypeDef *Foc, PI_CURRENT_TypeDef *pi_ctrl, float IU, float IV, float IW, float Iq_ref, float theta);
+void  IF_OpenLoop(FOC_TypeDef *Foc, PI_CURRENT_TypeDef *pi_ctrl, float IU, float IV, float IW, float Iq_ref, float Id_ref, float theta);
 void  CurrentLoop_Encode(FOC_TypeDef *Foc, PI_CURRENT_TypeDef *pi_ctrl, float IU, float IV, float IW, float Iq_ref, float theta);
 void  SMO_C_Control(FOC_TypeDef *Foc, PI_CURRENT_TypeDef *pi_ctrl, float IU, float IV, float IW, float Iq_ref, float theta);
 void  SMO_S_C_Control(FOC_TypeDef *Foc,PI_SPEED_TypeDef *S_PI, PI_CURRENT_TypeDef *C_PI, float IU, float IV, float IW, float Speed_ref, float theta);
 
-//控制器函数接口
+//PI控制器函数接口
 void  CurrentPI (FOC_TypeDef *Foc , PI_CURRENT_TypeDef *pi_ctrl);
 void  SpeedPI   (FOC_TypeDef *Foc , PI_SPEED_TypeDef   *pi_ctrl , float *Iqref);
-void PositionPI(int32_t actual_pos, int32_t target_pos, PI_POSITION_TypeDef *pi_ctrl, int16_t *Speedref);
+void  PositionPI(int32_t actual_pos, int32_t target_pos, PI_POSITION_TypeDef *pi_ctrl, int16_t *Speedref);
+
+//LADRC控制器函数接口
+void  SpeedLADRC_CalcGain(LADRC_SPEED_TypeDef *ctrl);
+void  SpeedLADRC_Init(LADRC_SPEED_TypeDef *ctrl);
+void  SpeedLADRC_Reset(LADRC_SPEED_TypeDef *ctrl, float speed_now);
+void  SpeedLADRC(FOC_TypeDef *Foc, LADRC_SPEED_TypeDef *ctrl, float speed_ref, float *Iqref);
+
+//MTPA控制函数接口
+void  MTPA_Control(float *Target_id, float flux, float Ld, float Lq, float iq);
+
+//弱磁控制函数接口
+void  FieldWeakening_Control(FOC_TypeDef *Foc, PI_FW_TypeDef *FW_PI, float Iq_ref_in, float *Id_ref_out, float *Iq_ref_out);
 
 
 
 #endif
+
+

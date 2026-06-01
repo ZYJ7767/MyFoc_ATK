@@ -2,6 +2,7 @@
 #define __OBSERVER_H
 
 #include "Foc_Function.h"
+#include "Filter.h"
 #include "stdint.h"
 #include "math.h"
 #include "main.h"

@@ -293,7 +293,7 @@
         <Ww>
           <count>27</count>
           <WinNumber>1</WinNumber>
-          <ItemText>\\MyFOC_G474\../Core/Src/main.c\step</ItemText>
+          <ItemText>Idref</ItemText>
         </Ww>
         <Ww>
           <count>28</count>
@@ -354,6 +354,16 @@
           <count>39</count>
           <WinNumber>1</WinNumber>
           <ItemText>ski</ItemText>
+        </Ww>
+        <Ww>
+          <count>40</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>S_LADRC</ItemText>
+        </Ww>
+        <Ww>
+          <count>41</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>FW_PI</ItemText>
         </Ww>
       </WatchWindow1>
       <Tracepoint>
@@ -861,6 +871,18 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
+      <PathWithFileName>..\MyCode\Filter.c</PathWithFileName>
+      <FilenameWithoutPath>Filter.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>36</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
       <PathWithFileName>..\MyCode\Led_Key.c</PathWithFileName>
       <FilenameWithoutPath>Led_Key.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
@@ -868,7 +890,7 @@
     </File>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>36</FileNumber>
+      <FileNumber>37</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -880,7 +902,7 @@
     </File>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>37</FileNumber>
+      <FileNumber>38</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -892,7 +914,7 @@
     </File>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>38</FileNumber>
+      <FileNumber>39</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
