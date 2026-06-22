@@ -1,8 +1,9 @@
 #include "Led_Key.h"
 #include "Identify_J_B.h"
+#include "Identify_Rs_Ls.h"
 
 extern ID_J_B_Handle_t g_idjb;
-
+extern ID_Rs_Ls_Handle_t g_idrsl;
 extern uint8_t   Run_Flag;
 
 /******* KEY 扫描功能函数 *******/
@@ -55,10 +56,12 @@ void key_function(uint8_t key , float *Iqref , int16_t *Speedref)
             case KEY0_PRES: 
                 LED0_TOGGLE();
             
-                Id_J_B_Start(&g_idjb);
+//                Id_J_B_Start(&g_idjb);     //辨识允许启动
+//                Id_Rs_Ls_Start(&g_idrsl);  //辨识允许启动
             
 //                *Iqref += 0.01f;
 //                if(*Iqref >= 2) *Iqref = 2;
+            
                 *Speedref += 500;
                 if(*Speedref >= 4500) *Speedref =4500 ;
                 break;

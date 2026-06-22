@@ -127,6 +127,29 @@ typedef struct
     float Iq_Rate;       // Iq变化率限制，单位：A/s，0表示关闭
 } LADRC_SPEED_TypeDef;
 
+// 速度环 SMC 滑模控制器
+typedef struct
+{
+    float speed_ref;     // 速度给定，单位 RPM
+    float speed_fdb;     // 速度反馈，单位 RPM
+    float err_speed;     // 速度误差 speed_ref - speed_fdb
+    float err_sum;       // 误差积分，用于构造滑模面
+    float s;             // 滑模面 s = err + c * err_sum
+
+    float h;             // 控制周期，单位 s
+    float c;             // 滑模面系数，越大稳态误差收敛越快
+    float Ksw;           // 滑模增益，决定最大输出能力
+    float phi;           // 边界层厚度，越大越平滑，越小越硬
+
+    float out;           // 当前输出 Iqref
+    float last_out;      // 上一次输出
+    float out_max;       // 输出上限，单位 A
+    float out_min;       // 输出下限，单位 A
+    float out_rate;      // 输出变化率限制，单位 A/s，0表示关闭
+    float sum_max;       // 积分限幅
+} SMC_TypeDef;
+
+
 // 弱磁控制器结构体
 typedef struct
 {
@@ -147,13 +170,44 @@ typedef struct
 } PI_FW_TypeDef;
 
 
+// MIT关节控制器结构体
+typedef struct
+{
+    float p_des;          // 期望机械位置，单位rad
+    float v_des;          // 期望机械速度，单位rad/s
+    float kp;             // 位置刚度，单位Nm/rad
+    float kd;             // 速度阻尼，单位Nm/(rad/s)
+    float tau_ff;         // 前馈转矩，单位Nm
+
+    float kt;             // 转矩常数，单位Nm/A，tau = kt * Iq
+    float h;              // 控制周期，单位s
+    float iq_max;         // Iq输出上限，单位A
+    float iq_min;         // Iq输出下限，单位A
+    float iq_rate;        // Iq变化率限制，单位A/s，<=0表示关闭
+
+    float p_fdb;          // 当前机械位置反馈，单位rad
+    float v_fdb;          // 当前机械速度反馈，单位rad/s
+    float err_p;          // 位置误差
+    float err_v;          // 速度误差
+    float tau_cmd;        // MIT计算出的目标转矩，单位Nm
+    float iq_cmd;         // MIT计算出的目标Iq，单位A
+    float last_iq_cmd;    // 上一拍Iq输出，单位A
+} MIT_TypeDef;
+
+
 
 extern FOC_TypeDef         MyFoc;
+
 extern PI_CURRENT_TypeDef  C_PI;
 extern PI_SPEED_TypeDef    S_PI;
 extern PI_POSITION_TypeDef P_PI;
 extern LADRC_SPEED_TypeDef S_LADRC;
+extern SMC_TypeDef         S_SMC;
+extern MIT_TypeDef         MIT_Ctrl;
+
 extern PI_FW_TypeDef       FW_PI;
+extern const float CogComp_Table[256];//齿槽转矩补偿表
+
 
 /************ 功能函数声明 ************/
 //FOC控制函数接口
@@ -182,11 +236,32 @@ void  SpeedLADRC_Init(LADRC_SPEED_TypeDef *ctrl);
 void  SpeedLADRC_Reset(LADRC_SPEED_TypeDef *ctrl, float speed_now);
 void  SpeedLADRC(FOC_TypeDef *Foc, LADRC_SPEED_TypeDef *ctrl, float speed_ref, float *Iqref);
 
+//SMC控制器函数接口
+void  SMC_Init(SMC_TypeDef *ctrl);
+void  SMC_Reset(SMC_TypeDef *ctrl, float iq_now);
+void  SpeedSMC(FOC_TypeDef *Foc, SMC_TypeDef *ctrl, float speed_ref, float *Iqref);
+
 //MTPA控制函数接口
 void  MTPA_Control(float *Target_id, float flux, float Ld, float Lq, float iq);
 
 //弱磁控制函数接口
 void  FieldWeakening_Control(FOC_TypeDef *Foc, PI_FW_TypeDef *FW_PI, float Iq_ref_in, float *Id_ref_out, float *Iq_ref_out);
+
+//MIT控制模式函数接口
+void  MIT_Init(MIT_TypeDef *ctrl);
+void  MIT_Reset(MIT_TypeDef *ctrl, float iq_now);
+void  MIT_SetCommand(MIT_TypeDef *ctrl, float p_des, float v_des, float kp, float kd, float tau_ff);
+void  MIT_CalcIq(MIT_TypeDef *ctrl, float p_mech_rad, float v_mech_rad_s, float *Iqref);
+void  MIT_Control(FOC_TypeDef *Foc, PI_CURRENT_TypeDef *pi_ctrl, MIT_TypeDef *mit_ctrl,
+                  float IU, float IV, float IW,
+                  float p_mech_rad, float v_mech_rad_s, float theta);
+
+                  
+
+
+
+
+
 
 
 

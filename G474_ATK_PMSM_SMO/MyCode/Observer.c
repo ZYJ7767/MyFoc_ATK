@@ -11,7 +11,7 @@ StepMotor Mo = { 0.375,     //Rs
 
 SlidingModeObserver SMO = {     0.8843f,    //A
                                 0.3086f,    //B
-                                12,         //K
+                                5,          //K
                                 0.0001,     //Ts
                                 0,          //est_Theta
                                 0,          //prev_theta
@@ -61,7 +61,7 @@ float sigmoid(float x)
     return tanhf(3.0f * x);
 }
 /**************** SMO+PLL ÀëÉ¢»¬Ä¤¹Û²âÆ÷ Ô¬À× ****************/
-float SMO_PLL_Update(SlidingModeObserver *smo, PLL_Handle *PLL, float u_alpha, float u_beta, float i_alpha, float i_beta) 
+float SMO_PLL_Update(SlidingModeObserver *smo, PLL_Handle *PLL, float u_alpha, float u_beta, float i_alpha, float i_beta, float dir) 
 {
     // ¸üĞÂalphaÖá
     smo->E_alpha = smo->K * sign(smo->est_ialpha - i_alpha);
@@ -74,13 +74,13 @@ float SMO_PLL_Update(SlidingModeObserver *smo, PLL_Handle *PLL, float u_alpha, f
     smo->est_ibeta = smo->A * smo->est_ibeta + smo->B * (u_beta - smo->E_beta);
     
     // PLLËø¶¨½Ç¶È
-    PLL_calculate(PLL, smo->E_alpha, smo->E_beta );
+    PLL_calculate(PLL, smo->E_alpha, smo->E_beta ,dir);
     
     return PLL->Est_theta;
 }
 
 /****************  PLLËøÏà»·¼ÆËãº¯Êı  ****************/ 
-void PLL_calculate(PLL_Handle *PLL ,float Ealpha ,float Ebeta)
+void PLL_calculate(PLL_Handle *PLL ,float Ealpha ,float Ebeta , float dir)
 {
     float SinValue = 0.0f;
     float CosValue = 0.0f;
@@ -88,7 +88,8 @@ void PLL_calculate(PLL_Handle *PLL ,float Ealpha ,float Ebeta)
     
     arm_sin_cos_f32(PLL->Est_theta * RAD_TO_DEG, &SinValue, &CosValue);
     
-    PLL->Err = -Ealpha *CosValue - Ebeta *SinValue;
+    PLL->Err = dir * (-Ealpha * CosValue - Ebeta * SinValue);
+    
     Em_Mag = sqrtf(Ealpha * Ealpha + Ebeta * Ebeta);
     PLL->Err = PLL->Err / (Em_Mag + 0.001f);
     

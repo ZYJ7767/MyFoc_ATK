@@ -365,6 +365,91 @@
           <WinNumber>1</WinNumber>
           <ItemText>FW_PI</ItemText>
         </Ww>
+        <Ww>
+          <count>42</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ref</ItemText>
+        </Ww>
+        <Ww>
+          <count>43</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>step</ItemText>
+        </Ww>
+        <Ww>
+          <count>44</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>my_theta</ItemText>
+        </Ww>
+        <Ww>
+          <count>45</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Enc_eTheta</ItemText>
+        </Ww>
+        <Ww>
+          <count>46</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>g_idrsl</ItemText>
+        </Ww>
+        <Ww>
+          <count>47</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>S_SMC</ItemText>
+        </Ww>
+        <Ww>
+          <count>48</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>SMO</ItemText>
+        </Ww>
+        <Ww>
+          <count>49</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>PLL</ItemText>
+        </Ww>
+        <Ww>
+          <count>50</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>DOB_Q_TL</ItemText>
+        </Ww>
+        <Ww>
+          <count>51</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>DOB_FULL_TL</ItemText>
+        </Ww>
+        <Ww>
+          <count>52</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>DOB_FULL_W_HAT</ItemText>
+        </Ww>
+        <Ww>
+          <count>53</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Iq</ItemText>
+        </Ww>
+        <Ww>
+          <count>54</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Pref</ItemText>
+        </Ww>
+        <Ww>
+          <count>55</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>MIT_Ctrl</ItemText>
+        </Ww>
+        <Ww>
+          <count>56</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Kp</ItemText>
+        </Ww>
+        <Ww>
+          <count>57</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Kd</ItemText>
+        </Ww>
+        <Ww>
+          <count>58</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Vref</ItemText>
+        </Ww>
       </WatchWindow1>
       <Tracepoint>
         <THDelay>0</THDelay>
@@ -823,8 +908,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\MyCode\Encoder.c</PathWithFileName>
-      <FilenameWithoutPath>Encoder.c</FilenameWithoutPath>
+      <PathWithFileName>..\MyCode\Observer.c</PathWithFileName>
+      <FilenameWithoutPath>Observer.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -835,8 +920,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\MyCode\Observer.c</PathWithFileName>
-      <FilenameWithoutPath>Observer.c</FilenameWithoutPath>
+      <PathWithFileName>..\MyCode\NFO.c</PathWithFileName>
+      <FilenameWithoutPath>NFO.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -847,8 +932,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\MyCode\Identify_J_B.c</PathWithFileName>
-      <FilenameWithoutPath>Identify_J_B.c</FilenameWithoutPath>
+      <PathWithFileName>..\MyCode\HFI.c</PathWithFileName>
+      <FilenameWithoutPath>HFI.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -859,14 +944,50 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\MyCode\Identify_Rs_Ls.c</PathWithFileName>
-      <FilenameWithoutPath>Identify_Rs_Ls.c</FilenameWithoutPath>
+      <PathWithFileName>..\MyCode\EKF.c</PathWithFileName>
+      <FilenameWithoutPath>EKF.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
       <GroupNumber>5</GroupNumber>
       <FileNumber>35</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\MyCode\DOB.c</PathWithFileName>
+      <FilenameWithoutPath>DOB.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>36</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\MyCode\DeadTime.c</PathWithFileName>
+      <FilenameWithoutPath>DeadTime.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>37</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\MyCode\Encoder.c</PathWithFileName>
+      <FilenameWithoutPath>Encoder.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>38</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -878,7 +999,7 @@
     </File>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>36</FileNumber>
+      <FileNumber>39</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -890,7 +1011,7 @@
     </File>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>37</FileNumber>
+      <FileNumber>40</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
@@ -902,25 +1023,37 @@
     </File>
     <File>
       <GroupNumber>5</GroupNumber>
-      <FileNumber>38</FileNumber>
+      <FileNumber>41</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\MyCode\Identify_J_B.c</PathWithFileName>
+      <FilenameWithoutPath>Identify_J_B.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>42</FileNumber>
+      <FileType>1</FileType>
+      <tvExp>0</tvExp>
+      <tvExpOptDlg>0</tvExpOptDlg>
+      <bDave2>0</bDave2>
+      <PathWithFileName>..\MyCode\Identify_Rs_Ls.c</PathWithFileName>
+      <FilenameWithoutPath>Identify_Rs_Ls.c</FilenameWithoutPath>
+      <RteFlg>0</RteFlg>
+      <bShared>0</bShared>
+    </File>
+    <File>
+      <GroupNumber>5</GroupNumber>
+      <FileNumber>43</FileNumber>
       <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\MyCode\ReadMe.c</PathWithFileName>
       <FilenameWithoutPath>ReadMe.c</FilenameWithoutPath>
-      <RteFlg>0</RteFlg>
-      <bShared>0</bShared>
-    </File>
-    <File>
-      <GroupNumber>5</GroupNumber>
-      <FileNumber>39</FileNumber>
-      <FileType>1</FileType>
-      <tvExp>0</tvExp>
-      <tvExpOptDlg>0</tvExpOptDlg>
-      <bDave2>0</bDave2>
-      <PathWithFileName>..\MyCode\ReadMe_for_Identify.c</PathWithFileName>
-      <FilenameWithoutPath>ReadMe_for_Identify.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

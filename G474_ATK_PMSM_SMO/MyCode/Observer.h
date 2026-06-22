@@ -49,7 +49,7 @@ typedef struct
     float Ts ;
     float Err ;
     float Est_we;           // 估计电角速度
-    uint16_t Est_RPM;       // 估计 转速
+    int16_t Est_RPM;       // 估计 转速
     float Est_theta;        // 估计电角度
     uint16_t Est_theta_int; // 1024格式的电角度
     float Pre_Est_Theta;    // 上一次估计电角度
@@ -63,8 +63,8 @@ extern PLL_Handle PLL;
 
 /**** 函数声明 ****/
 float sign(float x);                                                                                                            //符号函数
-void  PLL_calculate(PLL_Handle *PLL ,float Ealpha ,float Ebeta);                                                                //PLL函数
-float SMO_PLL_Update(SlidingModeObserver *smo, PLL_Handle *PLL, float u_alpha, float u_beta, float i_alpha, float i_beta);      //SMO PLL
+void  PLL_calculate(PLL_Handle *PLL ,float Ealpha ,float Ebeta, float dir);                                                                //PLL函数
+float SMO_PLL_Update(SlidingModeObserver *smo, PLL_Handle *PLL, float u_alpha, float u_beta, float i_alpha, float i_beta, float dir);      //SMO PLL
 
 
 

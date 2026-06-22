@@ -707,24 +707,39 @@
               <FilePath>..\MyCode\Foc_Function.c</FilePath>
             </File>
             <File>
-              <FileName>Encoder.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\MyCode\Encoder.c</FilePath>
-            </File>
-            <File>
               <FileName>Observer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\MyCode\Observer.c</FilePath>
             </File>
             <File>
-              <FileName>Identify_J_B.c</FileName>
+              <FileName>NFO.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\MyCode\Identify_J_B.c</FilePath>
+              <FilePath>..\MyCode\NFO.c</FilePath>
             </File>
             <File>
-              <FileName>Identify_Rs_Ls.c</FileName>
+              <FileName>HFI.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\MyCode\Identify_Rs_Ls.c</FilePath>
+              <FilePath>..\MyCode\HFI.c</FilePath>
+            </File>
+            <File>
+              <FileName>EKF.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\EKF.c</FilePath>
+            </File>
+            <File>
+              <FileName>DOB.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\DOB.c</FilePath>
+            </File>
+            <File>
+              <FileName>DeadTime.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\DeadTime.c</FilePath>
+            </File>
+            <File>
+              <FileName>Encoder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\Encoder.c</FilePath>
             </File>
             <File>
               <FileName>Filter.c</FileName>
@@ -742,14 +757,19 @@
               <FilePath>..\MyCode\Dwt_timer.c</FilePath>
             </File>
             <File>
+              <FileName>Identify_J_B.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\Identify_J_B.c</FilePath>
+            </File>
+            <File>
+              <FileName>Identify_Rs_Ls.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MyCode\Identify_Rs_Ls.c</FilePath>
+            </File>
+            <File>
               <FileName>ReadMe.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\MyCode\ReadMe.c</FilePath>
-            </File>
-            <File>
-              <FileName>ReadMe_for_Identify.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\MyCode\ReadMe_for_Identify.c</FilePath>
             </File>
           </Files>
         </Group>

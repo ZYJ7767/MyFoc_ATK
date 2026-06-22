@@ -62,6 +62,32 @@ void Encoder_Calculate_Speed(void)
     float cur_rpm   = (float)diff * 15.0f;                              // 5. 计算瞬时RPM = (diff / 4000) * (60 / 0.001) = diff * 15
     MyEnc.Speed_Flt = MyEnc.Speed_Flt * 0.6f + cur_rpm * 0.4f;        // 6. 速度强低通滤波 
     MyEnc.Speed_RPM = (int16_t)MyEnc.Speed_Flt;                         // 7. 输出整数 RPM
+
+//    
+//    static uint8_t cnt_ms = 0;
+//    static int32_t diff_sum = 0;
+
+//    uint16_t cur_cnt = __HAL_TIM_GET_COUNTER(&htim3);
+//    int32_t diff = (int32_t)cur_cnt - (int32_t)MyEnc.Last_Raw_Value;
+
+//    if (diff < -2000)       diff += ENCODER_PPR;
+//    else if (diff > 2000)   diff -= ENCODER_PPR;
+
+//    MyEnc.Last_Raw_Value = cur_cnt;
+
+//    diff_sum += diff;
+//    cnt_ms++;
+
+//    if (cnt_ms >= 5)
+//    {
+//        float cur_rpm = (float)diff_sum * 3.0f;  // 1 count / 5ms = 3 rpm
+
+//        MyEnc.Speed_Flt = MyEnc.Speed_Flt * 0.7f + cur_rpm * 0.3f;
+//        MyEnc.Speed_RPM = (int16_t)MyEnc.Speed_Flt;
+
+//        diff_sum = 0;
+//        cnt_ms = 0;
+//    }
 }
 
 
